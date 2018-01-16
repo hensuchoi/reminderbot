@@ -12,7 +12,30 @@ var fs = require('fs'),
     var T = new Twit(config);
     var stream = T.stream('user');
     stream.on('tweet', tweetEvent);
-
+    sendReminder();
+    
+    function sendReminder(){
+        var sql = "Select userID, message from message_date;"
+        
+        connection.query(sql, function(err, result, fields) {
+        if (!err)
+            console.log('The solution is: ', result );
+         else
+            console.log('Error while performing Query.');
+            
+            connection.end();
+        
+        })
+        
+        
+        
+        
+        
+        
+    }
+    
+    
+    
     function tweetEvent(eventMsg){
     var replyto = eventMsg.in_reply_to_screen_name;
     var text = eventMsg.text;
@@ -41,11 +64,6 @@ var fs = require('fs'),
     }
     
 };
-    
-    
-
-    
-    
 
 
 function getDate(str){
