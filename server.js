@@ -12,10 +12,12 @@ var fs = require('fs'),
     var T = new Twit(config);
     var stream = T.stream('user');
     stream.on('tweet', tweetEvent);
-    sendReminder();
+    //sendReminder();
+    
     
     function sendReminder(){
-        var sql = "Select userID, message from message_date;"
+        while (1){
+        var sql = "Select userID, message from message_date where date <= CURDATE();"
         
         connection.query(sql, function(err, result, fields) {
         if (!err)
@@ -23,15 +25,11 @@ var fs = require('fs'),
          else
             console.log('Error while performing Query.');
             
-            connection.end();
-        
-        })
-        
-        
-        
-        
-        
-        
+            
+            })
+            
+            
+        }
     }
     
     
@@ -39,6 +37,7 @@ var fs = require('fs'),
     function tweetEvent(eventMsg){
     var replyto = eventMsg.in_reply_to_screen_name;
     var text = eventMsg.text;
+    
     var user = eventMsg.user.screen_name;
     var id_str = eventMsg.id_str;
     var from = eventMsg.user.screen_name;
@@ -51,15 +50,20 @@ var fs = require('fs'),
     if (replyto === 'smartreminder' || mentions === 'smartreminder' ) {
         
         var newtweet ='@' + from + ' ' + 'Te recordare el dia: ' + getDate(text) ;
-        var sql = 'INSERT INTO  message_date (permalink, message, new_date, origin_date, userID) values("' + id_str + '","'+ text +'","' + getDate(text) + '",CURDATE(),"'+ user +'");'
+        console.log(getText(text));
+        console.log(getDate(text));
+        var txt = getText(text)
+        var sql = 'INSERT INTO  message_date (permalink, message, new_date, origin_date, userID) values("' + id_str + '","'+ txt +'","' + getDate(text) + '",CURDATE(),"'+ user +'");'
         tweetIt(newtweet);
         connection.query(sql, function(err, rows, fields) {
         if (!err)
             console.log('The solution is: ', rows);
          else
-            console.log('Error while performing Query.');
+            console.log(err);
+            console.log(this.sql)
+        connection.end();    
             
-            connection.end();
+            
         })
     }
     
@@ -73,6 +77,27 @@ function getDate(str){
         var unit = String(parsedDate.substring(3));
         return moment().add(number,unit).format('YYYY/MM/DD');
     }
+    
+function getDate(str){
+        var parsedString = str.split('smartreminder')
+        var str = parsedString[parsedString.length - 1];
+        str = str.replace (/".*?"/,'');
+        var number = Number(str.slice(1,2));
+        console.log(number);
+        var unit = String(str.substring(3).trim());
+        console.log(unit);
+        console.log(unit.length);
+        return moment().add(number,unit).format('YYYY/MM/DD');
+    
+}  
+
+function getText(str){
+        var parsedString = str.split('smartreminder')
+        var str = parsedString[parsedString.length - 1];
+        var message = str.match(/".*?"/);
+        return message[0].replace(/['"]+/g, '');
+    
+}  
     
 
 
