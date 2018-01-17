@@ -16,21 +16,28 @@ var fs = require('fs'),
     
     
     function sendReminder(){
-        while (1){
-        var sql = "Select userID, message from message_date where date <= CURDATE();"
+        
+        var sql = "Select userID, message from message_date where new_date <= CURDATE();"
+        
         
         connection.query(sql, function(err, result, fields) {
         if (!err)
-            console.log('The solution is: ', result );
+            for (var i in result) {
+                var newtweet ='@' + result[i].userID + ' Here is your reminder: ' + result[i].message ;
+                tweetIt(newtweet);
+            }
          else
-            console.log('Error while performing Query.');
+            console.log(err);
             
             
             })
-            
-            
-        }
+        
     }
+    
+    
+    function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
     
     
     
@@ -42,14 +49,14 @@ var fs = require('fs'),
     var id_str = eventMsg.id_str;
     var from = eventMsg.user.screen_name;
     
-    var mentions = eventMsg.entities.user_mentions[0].name;
+    var mentions = eventMsg.entities.user_mentions[0];
    
     
     
     
     if (replyto === 'smartreminder' || mentions === 'smartreminder' ) {
         
-        var newtweet ='@' + from + ' ' + 'Te recordare el dia: ' + getDate(text) ;
+        var newtweet ='@' + from + ' ' + 'Te recordare el dia: ' + getDate(text) + " Te amo <3 jaja" ;
         console.log(getText(text));
         console.log(getDate(text));
         var txt = getText(text)
@@ -85,8 +92,6 @@ function getDate(str){
         var number = Number(str.slice(1,2));
         console.log(number);
         var unit = String(str.substring(3).trim());
-        console.log(unit);
-        console.log(unit.length);
         return moment().add(number,unit).format('YYYY/MM/DD');
     
 }  
@@ -96,7 +101,6 @@ function getText(str){
         var str = parsedString[parsedString.length - 1];
         var message = str.match(/".*?"/);
         return message[0].replace(/['"]+/g, '');
-    
 }  
     
 
