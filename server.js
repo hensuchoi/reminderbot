@@ -7,8 +7,21 @@ var fs = require('fs'),
     config1 = require(path.join(__dirname, 'app.js'));
     
     
-    var sendReminder = function() {
+    var str = '10 minutes'
+        var myExp = /[^\s]+/g;
+        var number = Number(myExp.exec(str));
+        var unit = String(str.substring(3).trim());
+        console.log (number + ' ' + unit);
+        console.log(moment());
+        console.log( moment().add(number,unit).format('YYYY/MM/DD HH:mm:ss'));
+        console.log( moment().add(10,'minutes').format('YYYY/MM/DD HH:mm:ss'));
+        
     
+    
+   
+    
+    
+    var sendReminder = function() {
         
         var sql = "Select id, userID, message from message_date where new_date <= NOW();"
         
@@ -73,7 +86,7 @@ var fs = require('fs'),
     
     if (replyto === 'smartreminder' || flag == 1 ) {
         
-        var newtweet ='@' + from + ' ' + 'Te recordare el dia: ' + getDate(text) ;
+        var newtweet ='@' + from + ' ' + 'Messaging you on: ' +  getDate(text) ;
         var txt = getText(text)
         var sql = 'INSERT INTO  message_date (permalink, message, new_date, origin_date, userID) values("' + id_str + '","'+ txt +'","' + getDate(text) + '",NOW(),"'+ user +'");'
         tweetIt(newtweet);
@@ -89,21 +102,31 @@ var fs = require('fs'),
 };
 
 
-/*function getDate(str){
-        var parsedString = str.split('smartreminder')
-        var parsedDate = parsedString[parsedString.length - 1];
-        var number = Number(parsedDate.slice(1,2));
-        var unit = String(parsedDate.substring(3));
-        return moment().add(number,unit).format('YYYY/MM/DD');
-    }*/
+
     
 function getDate(str){
         var parsedString = str.split('smartreminder')
         var str = parsedString[parsedString.length - 1];
+        console.log(str);
         str = str.replace (/".*?"/,'');
-        var number = Number(str.slice(1,2));
-        var unit = String(str.substring(3).trim());
-        return moment().add(number,unit).format('YYYY/MM/DD hh:mm:ss');
+        console.log(str);
+        //var myExp = /[^\s]+/g;
+       var str1 = str.split(" ");
+       console.log(str1);
+       console.log(moment(str1[1]));
+       if (str1.length === 3)
+            return moment(str1[1]).format('YYYY/MM/DD HH:mm:ss');
+       else
+       {
+            console.log (str1);
+            var number = str1[1];
+            var unit = str1[2];
+            //var number = Number(myExp.exec(str));
+            
+            //var unit = String(str.substring(3).trim());
+            console.log (number + ' ' + unit);
+            return moment().add(number,unit).format('YYYY/MM/DD HH:mm:ss');
+       }
     
 }  
 
